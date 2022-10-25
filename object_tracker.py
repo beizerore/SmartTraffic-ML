@@ -16,21 +16,30 @@ import tensorflow as tf
 from yolov3.utils import Load_Yolo_model, image_preprocess, postprocess_boxes, nms, draw_bbox, read_class_names
 from yolov3.configs import *
 import time
+import argparse
 
 from deep_sort import nn_matching
 from deep_sort.detection import Detection
 from deep_sort.tracker import Tracker
 from deep_sort import generate_detections as gdet
 
-video_path   = "./IMAGES/channel09-simpang_kodim.mp4"
+parser = argparse.ArgumentParser()
+parser.add_argument('--yolomodel', type=str, help='*.weights path')
+parser.add_argument('--deepsortmodel', type=str, help='*.pb path')
+parser.add_argument('--coco', type=str, help='*.coco path')
+parser.add_argument('--video', type=str, help='*.mp4 path')
 
-def Object_tracking(Yolo, video_path, output_path, input_size=416, show=False, CLASSES=YOLO_COCO_CLASSES, score_threshold=0.3, iou_threshold=0.45, rectangle_colors='', Track_only = []):
+opt = parser.parse_args(args = [])
+
+video_path   = opt.video
+
+def Object_tracking(Yolo, video_path, output_path, input_size=416, show=False, CLASSES=opt.coco, score_threshold=0.3, iou_threshold=0.45, rectangle_colors='', Track_only = []):
     # Definition of the parameters
     max_cosine_distance = 0.7
     nn_budget = None
     
     #initialize deep sort object
-    model_filename = 'model_data/mars-small128.pb'
+    model_filename = opt.deepsortmodel
     encoder = gdet.create_box_encoder(model_filename, batch_size=1)
     metric = nn_matching.NearestNeighborDistanceMetric("cosine", max_cosine_distance, nn_budget)
     tracker = Tracker(metric)
